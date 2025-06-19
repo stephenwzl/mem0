@@ -29,16 +29,16 @@ def get_categories_for_memory(memory: str) -> List[str]:
             {"role": "user", "content": memory}
         ]
 
-        # Let OpenAI handle the pydantic parsing directly
-        completion = openai_client.chat.completions.with_response_format(
-            response_format=MemoryCategories
-        ).create(
+        # 使用beta版本的parse方法处理结构化输出
+        completion = openai_client.beta.chat.completions.parse(
             model="gpt-4o-mini",
             messages=messages,
-            temperature=0
+            temperature=0,
+            response_format=MemoryCategories
         )
 
         parsed: MemoryCategories = completion.choices[0].message.parsed
+        logging.info(f"[INFO] Parsed categories: {parsed.categories}")
         return [cat.strip().lower() for cat in parsed.categories]
 
     except Exception as e:
